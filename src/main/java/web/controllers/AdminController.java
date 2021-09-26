@@ -1,29 +1,16 @@
 package web.controllers;
 
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import web.models.User;
-import web.service.RoleService;
 import web.service.UserService;
 
 @AllArgsConstructor
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/users")
 public class AdminController {
-    private final RoleService roleService;
     private final UserService userService;
-    
-    @GetMapping
-    public String showAll(@AuthenticationPrincipal User principal, Model model) {
-        model.addAttribute("princ", principal);
-        model.addAttribute("users", userService.getAllUsers());
-        model.addAttribute("allRoles", roleService.getAllRoles());
-        model.addAttribute("new_user", new User());
-        return "admin";
-    }
     
     @PostMapping
     public String create(@ModelAttribute("new_user") User user) {
@@ -31,11 +18,8 @@ public class AdminController {
         return "redirect:/admin";
     }
     
-    @PatchMapping("edit")
+    @PatchMapping("{id}")
     public String update(@ModelAttribute("user") User user) {
-        System.out.println();
-        System.out.println(user);
-        System.out.println();
         userService.updateUser(user);
         return "redirect:/admin";
     }
@@ -45,4 +29,16 @@ public class AdminController {
         userService.deleteUserById(id);
         return "redirect:/admin";
     }
+    
+    // @GetMapping("new")
+    // public String newUser(Model model, @ModelAttribute("user") User user) {
+    //     model.addAttribute("allRoles", roleService.getAllRoles());
+    //     return "admin";
+    // }
+    
+    // @GetMapping("{id}/edit")
+    // public String showInfo(Model model, @PathVariable("id") long id) {
+    //     model.addAttribute("user", userService.getUserById(id));
+    //     return "admin/user";
+    // }
 }
