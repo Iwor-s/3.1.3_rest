@@ -1,35 +1,31 @@
 
+window.addEventListener('load', getUsers)
 const URL = "http://localhost:8088/api"
-const usersObj = {}
 const rolesObj = {}
+
 
 /**
  *  GET ALL USERS
  */
-const allUsersRows = document.querySelector('#users-tbody')
-window.addEventListener('load', getUsers)
-
 function getUsers() {
     fetch(`${URL}/users`)
         .then(resp => resp.json())
-        .then(data => {
-            renderUsers(data)
-            data.forEach(user => usersObj[user.id] = user)
-        })
+        .then(data => renderUsers(data))
 }
 
 function renderUsers(users) {
+    const usersTbody = document.querySelector('#users-tbody')
     let html = ''
     users.forEach(user => html += renderUser(user))
-    allUsersRows.innerHTML = html
-    
-    Array.from(document.querySelectorAll(".user-btn"))
-        .forEach(btn => {
-            btn.addEventListener('click', () => {
-                const attr = btn.getAttribute('id').split('-')
-                getId(attr[1], attr[0])
-            })
-        })
+    usersTbody.innerHTML = html
+    usersTbody.addEventListener('click', e => {
+        if (e.target.id.startsWith('edit-')) {
+            console.log('edit-btn')
+        } else if (e.target.id.startsWith('del-')) {
+            const id = e.target.id.split('-')
+            getId(id[1], id[0])
+        }
+    })
 }
 
 function renderUser(user) {
@@ -51,7 +47,7 @@ function renderUser(user) {
                 </td>
                 <td>
                     <button class="btn btn-danger px-2 py-1 user-btn"
-                            id="delete-${user.id}"
+                            id="del-${user.id}"
                             data-bs-toggle="modal"
                             data-bs-target="#del-modal">Delete</button>
                 </td>
@@ -63,7 +59,7 @@ function renderUser(user) {
 /**
  *  POST NEW USER
  */
-const success = document.querySelector("#success")
+const navHomeTab = document.querySelector("#nav-home-tab")
 const postUser = form => {
     fetch(`${URL}/users`, {
         method: 'POST',
@@ -72,26 +68,25 @@ const postUser = form => {
         },
         body: getJson(form)
     })
-        .then(resp => {
-            console.log(resp.ok)
-        })
+        .then(resp => resp.ok
+                ? postOk()
+                : alert("The user wasn't created"))
+}
+
+function postOk() {
+    getUsers()
+    navHomeTab.click()
 }
 
 const formNewUser = document.querySelector("#form-new-user");
 formNewUser.addEventListener('submit', e => {
     e.preventDefault()
     postUser(e.target)
-    success.classList.add("show")
-    setTimeout(() => {
-        e.target.reset()
-        success.classList.remove("show")
-    }, 1000)
 })
 
 function getJson(form) {
     const formData = new FormData(form);
     const roles = document.getElementById("new-roles")
-    console.log(roles)
     const rolesArr = []
     Array.from(roles.selectedOptions).forEach(role => {
         rolesArr.push({
@@ -106,11 +101,25 @@ function getJson(form) {
 
 
 /**
+ *  GET BY ID METHOD
+ */
+function getId(id, process) {
+    fetch(`${URL}/users/${id}`)
+        .then(resp => resp.json())
+        .then(data => process === 'del'
+            ? renderDelModal(data)
+            : renderEditModal(data))
+}
+
+
+/**
  *  DELETE USER
  */
+
 function delUser(id) {
-    fetch(`${URL}/users/${id}`, {method: 'DELETE'})
-        .then(getUsers)
+    fetch(`${URL}/users/${id}`, {
+        method: 'DELETE'
+    }).then(getUsers)
 }
 
 function renderDelModal(user) {
@@ -118,19 +127,13 @@ function renderDelModal(user) {
         .addEventListener('click', e => {
             e.preventDefault()
             delUser(user.id)
-            document.querySelector('#del-modal').classList.remove('show')
-            document.querySelector('.modal-backdrop').classList.remove('show')
-            document.querySelector('body').classList.remove('modal-open')
+            document.querySelector("#del-close").click()
         })
     
     const inputArr = []
     Array.from(document.querySelector('#del-modal-fields').children)
         .forEach(div => inputArr.push(Array.from(div.children)[1]))
-    
-    for (let i = 0; i < inputArr.length; i++) {
-        let fieldName = inputArr[i].getAttribute("name")
-        inputArr[i].value = user[fieldName]
-    }
+    inputArr.forEach(input => input.value = user[input.name])
     
     const select = document.querySelector('#del-roles')
     let html = ''
@@ -138,7 +141,7 @@ function renderDelModal(user) {
         html += `<option selected disabled>${role.name}</option>`
     })
     select.innerHTML = html
-    select.setAttribute('size', user.roles.length.toString())
+    select.size = user.roles.length
 }
 
 
@@ -148,7 +151,6 @@ function renderDelModal(user) {
 function editUser(id) {
     console.log("edit function", id)
 }
-
 
 function renderEditModal(user) {
     document.querySelector(`#edit-submit`)
@@ -180,13 +182,7 @@ function renderEditModal(user) {
 }
 
 
-function getId(id, process) {
-    fetch(`${URL}/users/${id}`)
-        .then(resp => resp.json())
-        .then(data => process === 'delete'
-            ? renderDelModal(data)
-            : renderEditModal(data))
-}
+
 function getRoles() {
     fetch(`${URL}/roles`)
         .then(resp => resp.json())
