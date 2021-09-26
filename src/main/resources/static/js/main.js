@@ -1,7 +1,53 @@
 
-window.addEventListener('load', getUsers)
 const URL = "http://localhost:8088/api"
-const rolesObj = {}
+const usersTbody = document.querySelector('#users-tbody')
+let rolesArr = []
+
+
+/**
+ *  EVENT LISTENERS
+ */
+window.addEventListener('load', () => {
+    getRoles()
+    getUsers()
+})
+document.querySelector('#userPageLink')
+    .addEventListener('click', () => {
+        const id = document.querySelector('#princEmail')['data-id']
+        console.log(id)
+    })
+usersTbody.addEventListener('click', e => {
+    const id = e.target.id.split('-')
+    getId(id[1], id[0])
+})
+document.querySelector('#form-new')
+    .addEventListener('submit', e => {
+        e.preventDefault()
+        postUser()
+        document.querySelector("#nav-home-tab").click()
+    })
+document.querySelector('#form-edit')
+    .addEventListener('submit', e => {
+        e.preventDefault()
+        editUser()
+        document.querySelector("#edit-close").click()
+    })
+document.querySelector(`#form-del`)
+    .addEventListener('submit', e => {
+        e.preventDefault()
+        delUser()
+        document.querySelector("#del-close").click()
+    })
+
+
+/**
+ *  GET ALL ROLES
+ */
+function getRoles() {
+    fetch(`${URL}/roles`)
+        .then(resp => resp.json())
+        .then(data => rolesArr = data)
+}
 
 
 /**
@@ -10,22 +56,13 @@ const rolesObj = {}
 function getUsers() {
     fetch(`${URL}/users`)
         .then(resp => resp.json())
-        .then(data => renderUsers(data))
+        .then(data => renderAllUsers(data))
 }
 
-function renderUsers(users) {
-    const usersTbody = document.querySelector('#users-tbody')
+function renderAllUsers(users) {
     let html = ''
     users.forEach(user => html += renderUser(user))
     usersTbody.innerHTML = html
-    usersTbody.addEventListener('click', e => {
-        if (e.target.id.startsWith('edit-')) {
-            console.log('edit-btn')
-        } else if (e.target.id.startsWith('del-')) {
-            const id = e.target.id.split('-')
-            getId(id[1], id[0])
-        }
-    })
 }
 
 function renderUser(user) {
@@ -59,8 +96,8 @@ function renderUser(user) {
 /**
  *  POST NEW USER
  */
-const navHomeTab = document.querySelector("#nav-home-tab")
-const postUser = form => {
+const postUser = () => {
+    const form = document.querySelector('#form-new')
     fetch(`${URL}/users`, {
         method: 'POST',
         headers: {
@@ -68,27 +105,15 @@ const postUser = form => {
         },
         body: getJson(form)
     })
-        .then(resp => resp.ok
-                ? postOk()
-                : alert("The user wasn't created"))
+        .then(getUsers)
+    form.reset()
 }
-
-function postOk() {
-    getUsers()
-    navHomeTab.click()
-}
-
-const formNewUser = document.querySelector("#form-new-user");
-formNewUser.addEventListener('submit', e => {
-    e.preventDefault()
-    postUser(e.target)
-})
 
 function getJson(form) {
     const formData = new FormData(form);
-    const roles = document.getElementById("new-roles")
+    const selectTag = form[form.length - 2]
     const rolesArr = []
-    Array.from(roles.selectedOptions).forEach(role => {
+    Array.from(selectTag.selectedOptions).forEach(role => {
         rolesArr.push({
             id: role.value,
             name: role.text
@@ -101,37 +126,31 @@ function getJson(form) {
 
 
 /**
- *  GET BY ID METHOD
+ *  GET USER
  */
 function getId(id, process) {
     fetch(`${URL}/users/${id}`)
         .then(resp => resp.json())
-        .then(data => process === 'del'
-            ? renderDelModal(data)
-            : renderEditModal(data))
+        .then(data => {
+            if (process === 'del') renderDelModal(data)
+            if (process === 'edit') renderEditModal(data)
+        })
 }
 
 
 /**
  *  DELETE USER
  */
-
-function delUser(id) {
+function delUser() {
+    const id = document.querySelector('#form-del')[0].value
     fetch(`${URL}/users/${id}`, {
         method: 'DELETE'
     }).then(getUsers)
 }
 
 function renderDelModal(user) {
-    document.querySelector(`#del-submit`)
-        .addEventListener('click', e => {
-            e.preventDefault()
-            delUser(user.id)
-            document.querySelector("#del-close").click()
-        })
-    
     const inputArr = []
-    Array.from(document.querySelector('#del-modal-fields').children)
+    Array.from(document.querySelector('#form-del').children)
         .forEach(div => inputArr.push(Array.from(div.children)[1]))
     inputArr.forEach(input => input.value = user[input.name])
     
@@ -148,47 +167,39 @@ function renderDelModal(user) {
 /**
  *  EDIT USER
  */
-function editUser(id) {
-    console.log("edit function", id)
+const editUser = () => {
+    const form = document.querySelector('#form-edit')
+    const id = form[0].value
+    fetch(`${URL}/users/${id}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: getJson(form)
+    })
+        .then(getUsers)
 }
 
 function renderEditModal(user) {
-    document.querySelector(`#edit-submit`)
-        .addEventListener('click', e => {
-            e.preventDefault()
-            editUser(user.id)
-            document.querySelector('#edit-modal').classList.remove('show')
-            document.querySelector('.modal-backdrop').classList.remove('show')
-            document.querySelector('body').classList.remove('modal-open')
-        })
-    
     const inputArr = []
-    Array.from(document.querySelector(`#edit-modal-fields`).children)
+    Array.from(document.querySelector(`#form-edit`).children)
         .forEach(div => inputArr.push(Array.from(div.children)[1]))
-    for (let i = 0; i < inputArr.length; i++) {
-        let fieldName = inputArr[i].getAttribute("name")
-        if (fieldName !== 'password') {
-            inputArr[i].value = user[fieldName]
-        }
-    }
+    inputArr.forEach(input => input.value = user[input.name])
+    document.querySelector('#edit-password').value = null
+    
     const select = document.querySelector('#edit-roles')
     let html = ''
-    console.log(rolesObj)
-    Object.values(rolesObj).forEach(role => {
-        html += `<option selected>${role.name}</option>`
+    rolesArr.forEach(role => {
+        let isSelected = false
+        user.roles.forEach(userRole => {
+            if (userRole.name === role.name) {
+                isSelected = true
+            }
+        })
+        isSelected
+            ? html += `<option value="${role.id}" selected>${role.name}</option>`
+            : html += `<option value="${role.id}">${role.name}</option>`
     })
     select.innerHTML = html
-    select.setAttribute('size', rolesObj.length)
-}
-
-
-
-function getRoles() {
-    fetch(`${URL}/roles`)
-        .then(resp => resp.json())
-        .then(data => setRoles(data))
-}
-function setRoles(roles) {
-    console.log(roles)
-    roles.forEach(role => rolesObj[roles.name] = role)
+    select.size = rolesArr.length
 }

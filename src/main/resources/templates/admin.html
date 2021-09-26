@@ -40,8 +40,8 @@
                                 <h5 class="modal-title" id="edit-modal-title">Edit user</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <form>
-                                <div class="modal-body col-6 mx-auto text-center" id="edit-modal-fields">
+                            <div class="modal-body col-6 mx-auto text-center">
+                                <form id="form-edit">
                                     <div>
                                         <label class="form-label fw-bold mb-1 mt-3" for="edit-id">ID</label>
                                         <input class="form-control" id="edit-id" type="text" name="id" required readonly>
@@ -71,12 +71,12 @@
                                         <select class="form-select" id="edit-roles" name="roles" multiple size="2" required>
                                         </select>
                                     </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Close</button>
-                                    <button class="btn btn-danger px-2 py-1" id="edit-submit" type="submit">Edit</button>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" id="edit-close" type="button" data-bs-dismiss="modal">Close</button>
+                                <button class="btn btn-danger px-2 py-1" id="edit-submit" form="form-edit" type="submit">Edit</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -89,8 +89,8 @@
                                 <h5 class="modal-title" id="modal-title">Delete user</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <form>
-                                <div class="modal-body col-6 mx-auto text-center" id="del-modal-fields">
+                            <div class="modal-body col-6 mx-auto text-center">
+                                <form id="form-del">
                                     <div>
                                         <label class="form-label fw-bold mb-1 mt-3" for="id">ID</label>
                                         <input class="form-control" id="id" type="text" name="id" required readonly>
@@ -116,12 +116,12 @@
                                         <select class="form-select" id="del-roles" name="roles" multiple size="2" required>
                                         </select>
                                     </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button class="btn btn-secondary" id="del-close" type="button" data-bs-dismiss="modal">Close</button>
-                                    <button class="btn btn-danger px-2 py-1" id="del-submit" type="submit">Delete</button>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" id="del-close" type="button" data-bs-dismiss="modal">Close</button>
+                                <button class="btn btn-danger px-2 py-1" id="del-submit" form="form-del" type="submit">Delete</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -167,7 +167,7 @@
                             <h4 class="card-header">Add new user</h4>
                             <div class="card-body">
                                 <div class="col-md-6 col-lg-4 col-xl-3 mx-auto text-center">
-                                    <form id="form-new-user">
+                                    <form id="form-new">
                                         <div>
                                             <label class="form-label fw-bold mb-1 mt-3" for="new-name">First Name</label>
                                             <input class="form-control" id="new-name" type="text" name="firstName" required autofocus>
@@ -197,10 +197,10 @@
                                                 </option>
                                             </select>
                                         </div>
-                                        <div class="my-4">
-                                            <button class="btn btn-success px-3 py-2 fs-5" type="submit">Add new user</button>
-                                        </div>
                                     </form>
+                                    <div class="my-4">
+                                        <button class="btn btn-success px-3 py-2 fs-5" id="new-submit" form="form-new" type="submit">Add new user</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

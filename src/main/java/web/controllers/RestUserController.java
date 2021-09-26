@@ -27,12 +27,18 @@ public class RestUserController {
     
     @PostMapping
     public User create(@RequestBody User user) {
+        System.out.println();
+        System.out.println(user);
+        System.out.println();
         userService.saveUser(user);
         return user;
     }
     
     @PatchMapping("{id}")
-    public User update(@ModelAttribute("user") User user) {
+    public User update(@RequestBody User user) {
+        System.out.println();
+        System.out.println(user);
+        System.out.println();
         userService.updateUser(user);
         return user;
     }
