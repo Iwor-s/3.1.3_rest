@@ -1,5 +1,5 @@
 
-const URL = "http://localhost:8088/api"
+const URL = "http://localhost:8088/api/users"
 const usersTbody = document.querySelector('#users-tbody')
 let rolesArr = []
 
@@ -11,11 +11,6 @@ window.addEventListener('load', () => {
     getRoles()
     getUsers()
 })
-document.querySelector('#userPageLink')
-    .addEventListener('click', () => {
-        const id = document.querySelector('#princEmail')['data-id']
-        console.log(id)
-    })
 usersTbody.addEventListener('click', e => {
     const id = e.target.id.split('-')
     getId(id[1], id[0])
@@ -54,7 +49,7 @@ function getRoles() {
  *  GET ALL USERS
  */
 function getUsers() {
-    fetch(`${URL}/users`)
+    fetch(URL)
         .then(resp => resp.json())
         .then(data => renderAllUsers(data))
 }
@@ -98,7 +93,7 @@ function renderUser(user) {
  */
 const postUser = () => {
     const form = document.querySelector('#form-new')
-    fetch(`${URL}/users`, {
+    fetch(URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -129,7 +124,7 @@ function getJson(form) {
  *  GET USER
  */
 function getId(id, process) {
-    fetch(`${URL}/users/${id}`)
+    fetch(`${URL}/${id}`)
         .then(resp => resp.json())
         .then(data => {
             if (process === 'del') renderDelModal(data)
@@ -143,7 +138,7 @@ function getId(id, process) {
  */
 function delUser() {
     const id = document.querySelector('#form-del')[0].value
-    fetch(`${URL}/users/${id}`, {
+    fetch(`${URL}/${id}`, {
         method: 'DELETE'
     }).then(getUsers)
 }
@@ -170,7 +165,7 @@ function renderDelModal(user) {
 const editUser = () => {
     const form = document.querySelector('#form-edit')
     const id = form[0].value
-    fetch(`${URL}/users/${id}`, {
+    fetch(`${URL}/${id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json'

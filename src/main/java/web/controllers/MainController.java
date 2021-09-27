@@ -28,9 +28,7 @@ public class MainController {
     @GetMapping("admin")
     public String showAll(@AuthenticationPrincipal User principal, Model model) {
         model.addAttribute("princ", principal);
-        model.addAttribute("users", userService.getAllUsers());
         model.addAttribute("allRoles", roleService.getAllRoles());
-        model.addAttribute("new_user", new User());
         return "admin";
     }
     
